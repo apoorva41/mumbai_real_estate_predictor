@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn import svm
-from sklearn.metrics import accuracy_score,mean_absolute_error
+from sklearn.metrics import r2_score,mean_absolute_error
 
 df=pd.read_csv('cleaned_real_estate_data.csv')
 
@@ -34,6 +34,9 @@ rf_prediction=rf_model.predict(x_test)
 
 print("Linear Regression Average Error:",mean_absolute_error(y_test,lr_prediction))
 print("Random Forest Average Error:",mean_absolute_error(y_test,rf_prediction))
+
+print("Linear Regression R2 Score:",r2_score(y_test,lr_prediction))
+print("Random Forest R2 Score:",r2_score(y_test,rf_prediction))
 
 with open('rf_model.pkl','wb') as f:
     pickle.dump(rf_model,f)

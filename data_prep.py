@@ -15,18 +15,36 @@ df=pd.read_csv('DATASET.csv')
 
 df.columns
 
+# Drop unnecessary columns
 df = df.drop(columns=["S.NO", "PROP_ID"])
 df.columns
 
-display(df.isna().sum())
+print(df.isna().sum())
 print(df.shape)
 
 df = df.dropna(subset=['TOTAL_FLOOR'])
-display(df.isna().sum())
+print(df.isna().sum())
 print(df.shape)
 
 df.dtypes
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# numerical columns
+numerical_cols = ['SIZE_OF_PROPERTY', 'NO_OF_BEDROOMS', 'TOTAL_FLOOR', 'AGE_OF_BUILDING']
+
+# Box plot
+plt.figure(figsize=(12, 8))
+for i, col in enumerate(numerical_cols, 1):
+    plt.subplot(2, 2, i)
+    sns.boxplot(x=df[col], color='skyblue')
+    plt.title(f'Outlier Check: {col}')
+
+plt.tight_layout()
+plt.show()
+
+# Handling outliers
 def handle_outliers(df,columns):
   Q1=df[columns].quantile(0.25)
   Q3=df[columns].quantile(0.75)
@@ -37,12 +55,19 @@ def handle_outliers(df,columns):
   df=df[((df[columns]>=lower)&(df[columns]<=higher))]
   return df
 
+df=handle_outliers(df,"TOTAL_FLOOR")
 df=handle_outliers(df,"PRICE_IN_LAKHS")
-df=handle_outliers(df,"SIZE_OF_PROPERTY")
 
+"""Remove extreme outliers using the Interquartile Range (IQR) method
+This prevents unusually large properties or floor counts from confusing the model when predicting normal homes
+"""
+
+# Encoding(text to number)
 text_column=["LOCALITY","PROPERTY_TYPE","CONSTRUCTION_STATUS"]
 df=pd.get_dummies(df,columns=text_column,drop_first=True)
 
+# Compress all numerical columns to a similar scale so the model evaluates them fairly
+# This prevents large numbers (like 1000 sq ft) from unfairly overpowering small numbers (like 3 bedrooms)
 scaler=StandardScaler()
 num_column=["SIZE_OF_PROPERTY","NO_OF_BEDROOMS","AGE_OF_BUILDING","TOTAL_FLOOR"]
 df[num_column]=scaler.fit_transform(df[num_column])
@@ -66,4 +91,3 @@ df1 = pd.read_pickle('cleaned_real_estate_data.pkl')
 # Bring the scaler back
 with open('scaler.pkl', 'rb') as file:
     scaler = pickle.load(file)
-
